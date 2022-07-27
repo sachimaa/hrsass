@@ -6,6 +6,7 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
+// 网站名称
 const name = defaultSettings.title || 'vue Admin Template' // page title
 
 // If your port is set to 80,
@@ -13,6 +14,7 @@ const name = defaultSettings.title || 'vue Admin Template' // page title
 // For example, Mac: sudo npm run
 // You can change the port by the following methods:
 // port = 9528 npm run dev OR npm run dev --port = 9528
+// 端口
 const port = process.env.port || process.env.npm_config_port || 9528 // dev port
 
 // All configuration item explanations can be find in https://cli.vuejs.org/config/
@@ -30,6 +32,14 @@ module.exports = {
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: {
+    // 代理配置
+    proxy: {
+      // 当本地的请求 有/api的时候，就会代理我们的请求地址向另外一个服务器发出请求
+      '/api': {
+        target: 'http://ihrm.itheima.net/', // 跨域请求的地址
+        changeOrigin: true, // 是否跨域 需要设置此值为true才可以让本地服务代理发出的请求
+      }
+    },
     port: port,
     open: true,
     overlay: {

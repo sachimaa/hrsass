@@ -1,19 +1,21 @@
 <template>
   <div class="login-container">
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
+    <!-- 设置头部背景 -->
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">
+          <img src="@/assets/common/login-logo.png" alt="">
+        </h3>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="mobile">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
+          ref="mobile"
           v-model="loginForm.username"
-          placeholder="Username"
+          placeholder="请输入手机号"
           name="username"
           type="text"
           tabindex="1"
@@ -30,22 +32,24 @@
           ref="password"
           v-model="loginForm.password"
           :type="passwordType"
-          placeholder="Password"
+          placeholder="请输入密码"
           name="password"
           tabindex="2"
           auto-complete="on"
-          @keyup.enter.native="handleLogin"
+          @keyup.enter.native="handleLogin" 
         />
+        <!-- @keyup.enter属于按键修饰符，如果我们想监听在按回车键的时候触发 -->
         <span class="show-pwd" @click="showPwd">
           <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <el-button class="loginBtn" :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <!-- @keyup.enter.native表示监听组件的原生事件，比如 keyup就是于input的原生事件，这里写native表示keyup是一个原生事件 -->
 
       <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
+        <span style="margin-right:20px;">账号: 13800000002</span>
+        <span> 密码: 123456</span>
       </div>
 
     </el-form>
@@ -53,33 +57,40 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-
+import { validMobile } from '@/utils/validate'
+import { mapActions  } from 'vuex' // 引入vuex的辅助函数
 export default {
   name: 'Login',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
+    // 自定义校验函数
+    const validateMobile = (rule, value, callback) => {
+      // // 校验value
+      // if (!validMobile(value)) {
+      //    // 如果不通过，执行错误信息
+      //   callback(new Error('手机号格式不正确'))
+      // } else {
+      //   // 通过直接执行callback
+      //   callback()
+      // }
+      validMobile(value) ? callback() : callback(new Error('手机号格式不正确'))
     }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
+    // const validatePassword = (rule, value, callback) => {
+    //   if (value.length < 6) {
+    //     callback(new Error('密码不能少于6位'))
+    //   } else {
+    //     callback()
+    //   }
+    // }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        mobile: '13800000002',
+        password: '123456'
       },
+      // 校验规则 手机号必填，进行格式校验，密码必填，长度6-16位之间
+      // trigger 校验的触发方式 blur/change
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        mobile: [{ required: true, trigger: 'blur', message: '手机号不能为空' }, {validator: validateMobile, trigger: 'blur' }],
+        password: [{ required: true, trigger: 'blur', message: '密码不能为空' }, { min: 6, max: 16, message: '密码的长度在6-16位之间', trigger: 'blur' }]
       },
       loading: false,
       passwordType: 'password',
@@ -95,6 +106,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['user/login']), // 引入方法
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -106,23 +118,33 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
+      // 表单的手动校验
+      this.$refs.loginForm.validate(async isOK => {
+        if (isOK) {
+          try {
+          // 只有校验通过才能调用action
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
+          await this['user/login'](this.loginForm)
+          // async标记的函数实际上一个promise对象
+          // await下面的代码 都是成功执行的代码
+            this.$router.push('/')
+          } catch (error) {
+            console.log(error)
+          } finally {
+            // 不论执行try 还是catch  都去关闭转圈
             this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
+          }  
         }
       })
     }
   }
 }
+          
+      // ref可以获取一个元素的dom对象
+      // ref作用到组件上的时候可以获取该组件的实例 this
+    
+  
+
 </script>
 
 <style lang="scss">
@@ -130,7 +152,7 @@ export default {
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
 $bg:#283443;
-$light_gray:#fff;
+$light_gray:#68b0fe; // 将输入框颜色改成蓝色
 $cursor: #fff;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
@@ -141,6 +163,8 @@ $cursor: #fff;
 
 /* reset element-ui css */
 .login-container {
+  background-image: url('~@/assets/common/login.jpg'); // 设置背景图片
+  background-position: center; // 将图片位置设置为充满整个屏幕
   .el-input {
     display: inline-block;
     height: 47px;
@@ -165,9 +189,18 @@ $cursor: #fff;
 
   .el-form-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.7); // 输入登录表单的背景色
     border-radius: 5px;
     color: #454545;
+  }
+  .el-form-item__error {
+    color: #fff;
+  }
+  .loginBtn {
+    background: #407ffe;
+    height: 64px;
+    line-height: 32px;
+    font-size: 24px;
   }
 }
 </style>
