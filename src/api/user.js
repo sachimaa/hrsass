@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 // 登录接口
 export function login(data) {
-    // 返回一个promise对象
+  // 返回一个promise对象
   return request({
     url: '/sys/login',
     method: 'post',
@@ -17,12 +17,11 @@ export function getUserInfo() {
   })
 }
 // 获取用户的基本信息
-export function getUserDatailById(id) {
+export function getUserDetailById(id) {
   return request({
     url: `/sys/user/${id}`
   })
 }
 
 export function logout() {
-  
 }
