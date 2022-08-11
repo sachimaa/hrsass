@@ -14,7 +14,7 @@ import router from './router'
 import Components from '@/components'
 import * as directives from '@/directives'
 import * as filters from '@/filters'
-// import i18n from '@/lang'
+import i18n from '@/lang'
 import CheckPermission from '@/mixin/checkPermission'
 import '@/icons' // icon
 import '@/permission' // permission control
@@ -24,7 +24,7 @@ import '@/permission' // permission control
 Vue.use(ElementUI, {
   // element本身支持i18n的处理
   // 此时 i18n就会根据当前的locale属性去寻找对应的显示内容
-  // i18n: (key, value) => i18n.t(key) // t方法 会去对应的语言包里寻找对应的内容
+  i18n: (key, value) => i18n.t(key) // t方法 会去对应的语言包里寻找对应的内容
   // 改变locale的值 就可以改变对应的当前语言
 })
 // for in
@@ -44,6 +44,6 @@ new Vue({
   el: '#app',
   router,
   store,
-  // i18n,
+  i18n,
   render: h => h(App)
 })
